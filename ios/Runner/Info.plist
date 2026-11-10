@@ -10,8 +10,12 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>CFBundleDisplayName</key>
+	<string>Marcador de Jogos</string>
 	<key>CFBundleName</key>
-	<string>Placar de Truco</string>
+	<string>Marcador Jogos</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
