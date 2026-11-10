@@ -1,16 +1,17 @@
-# marcador_truco
+# Marcador de Jogos
 
-A new Flutter project.
+Placar de truco, dominó e buraco no celular, sem complicação: toque para somar pontos, desfaça o último lance e comece uma nova partida. O placar fica salvo no aparelho.
 
-## Getting Started
+Um app da **Help Soluções em Informática (HSI)**, feito em Flutter. Antes este projeto se chamava "Placar de Truco" (`marcador-truco`).
 
-This project is a starting point for a Flutter application.
+## Rodando
 
-A few resources to get you started if this is your first Flutter project:
+Requer o Flutter estável e o Android SDK.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+```bash
+flutter pub get
+flutter run                        # celular conectado por USB
+flutter build apk --release --split-per-abi
+```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Detalhes de arquitetura, anúncios e publicação: [CLAUDE.md](CLAUDE.md).

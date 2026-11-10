@@ -1,5 +1,5 @@
-name: marcador_truco
-description: Um modo simples e facil de marcar o placar do seu truco com os amigos.
+name: marcador_jogos
+description: "Marcador de Jogos: placar de truco, dominó e buraco. Help Soluções em Informática (HSI)."
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.

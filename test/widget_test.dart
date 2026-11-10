@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:marcador_truco/main.dart';
-import 'package:marcador_truco/telas/domino.dart';
-import 'package:marcador_truco/telas/placar_rodadas.dart';
-import 'package:marcador_truco/telas/truco.dart';
+import 'package:marcador_jogos/main.dart';
+import 'package:marcador_jogos/telas/domino.dart';
+import 'package:marcador_jogos/telas/placar_rodadas.dart';
+import 'package:marcador_jogos/telas/truco.dart';
 
 Widget _app(Widget tela) => MaterialApp(home: tela);
 
@@ -15,7 +15,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     PackageInfo.setMockInitialValues(
       appName: 'Marcador de Jogos',
-      packageName: 'com.example.marcador_truco',
+      packageName: 'br.com.hsi.marcadorjogos',
       version: '1.0.1',
       buildNumber: '1',
       buildSignature: '',

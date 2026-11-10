@@ -1,4 +1,4 @@
-package com.example.marcador_truco
+package br.com.hsi.marcadorjogos
 
 import io.flutter.embedding.android.FlutterActivity
 

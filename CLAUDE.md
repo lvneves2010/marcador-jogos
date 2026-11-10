@@ -1,104 +1,77 @@
-# Placar de Truco (marcador-truco)
+# Marcador de Jogos
 
-App Flutter simples para marcar o placar de uma partida de truco ("Nós" × "Eles", até 12 pontos), com o placar salvo localmente via `shared_preferences`. Projeto pessoal do Leonardo, escrito por volta de 2020 e nunca atualizado desde então.
+App Flutter para marcar placar de **truco, dominó e buraco**, da **Help Soluções em Informática (HSI)**. O placar fica salvo no aparelho via `shared_preferences`. Nasceu em 2020 como "Placar de Truco" e foi modernizado e renomeado em nov/2026.
 
-- Repo: https://github.com/lvneves2010/marcador-truco (público, branch `master`). O push funciona pelo Git Credential Manager da máquina.
-- Estrutura: [lib/main.dart](lib/main.dart) (MaterialApp, nome e cores da marca) → [lib/telas/abertura.dart](lib/telas/abertura.dart) (logo HSI + versão, ~3 s) → [lib/telas/menu.dart](lib/telas/menu.dart) (escolha do placar) → [truco.dart](lib/telas/truco.dart) [domino.dart](lib/telas/domino.dart) (2 a 4 jogadores, botão + de 1 ponto por toque, até 12) e [placar_rodadas.dart](lib/telas/placar_rodadas.dart) (buraco até 3000, lançamento por rodada; parametrizado por `chave`/`metaPadrao`). Testes em [test/widget_test.dart](test/widget_test.dart).
-- Chaves no SharedPreferences: truco `counter` (nós) e `counter2` (eles); buraco `buraco_nos`, `buraco_eles` (lista de pontos por rodada) e `buraco_meta`; dominó `domino_jogadores`, `domino_pontos`, `domino_nomes`, `domino_historico` (índices de quem pontuou, para desfazer).
-- Nome exibido: "Marcador de Jogos" (`android:label` no AndroidManifest, `nomeApp` em `lib/main.dart`). Empresa: Help Soluções em Informática (HSI).
-- Ícone do app: cartas de baralho (J/K/Q de paus no feltro verde), redesenhado em alta resolução a partir do ícone original de 192 px. Fontes em `assets/icon/` (icone.png, icone_fundo/icone_frente.png do adaptive icon e o script `gerar_icone.py`); ícones Android/iOS regerados com `dart run flutter_launcher_icons`. Ícone da Play Store (512×512, PNG 32 bits): `store/icone_playstore_512.png`. **O logo HSI não é o ícone do app** (a empresa terá outros apps): ele aparece só no rodapé (`RodapeEmpresa` em `lib/versao.dart`: completo na abertura, `compacto: true` = logo + número da versão nas demais telas), em `assets/images/logo_hsi.png` (script `assets/icon/gerar_logo_hsi.py`).
-- Versão: `version:` do pubspec; o rodapé/abertura mostram só a parte antes do `+`.
+- Repo: https://github.com/lvneves2010/marcador-jogos (público, branch `master`). Antes se chamava `marcador-truco`; o GitHub redireciona o endereço antigo.
+- **Pasta de trabalho: `C:\repos\HSI\marcador-jogos`**, um clone limpo criado em 2026-11-10. A pasta antiga `C:\repos\HSI\marcador-truco` ficou só como backup.
+- applicationId e namespace: `br.com.hsi.marcadorjogos`. Pacote Dart: `marcador_jogos`. **O applicationId não pode mudar depois de publicado na Play.** Até 2026-11-10 era `com.example.marcador_truco`; um app instalado com esse ID é outro app no Android e precisa ser desinstalado à parte (o placar salvo nele não migra). Para conferir: `adb shell pm list packages | grep -E "marcador"`.
+- iOS fora do escopo: o bundle `app.marcadorTruco` em `ios/Runner.xcodeproj` ficou como estava.
+- O que o clone **não** traz (está no `.gitignore`) e foi copiado à mão da pasta antiga:
+  - `PLANO_LANCAMENTO_PLAYSTORE.md`: checklist da publicação, com dados da empresa e passos com o contador. Fica fora do git de propósito.
+  - `android/gradlew`, `gradle-wrapper.jar` e `local.properties` são regerados pelo Flutter no primeiro build.
+- Push no GitHub: a máquina tem duas contas do GitHub (pessoal e Jadlog). Por isso o remote usa `https://lvneves2010@github.com/...`, e os commits usam o e-mail pessoal (`git config user.email` local).
+- Projetos irmãos em `C:\repos\HSI`: `planevento` e `kira` (Ionic + Capacitor, os mesmos padrões de rodapé HSI e AdMob) e `leoneves-site` (onde vai ficar a política de privacidade).
 
-## Objetivos deste ciclo de trabalho
+## Estrutura
 
-1. **Compatibilidade com aparelhos novos.** O APK antigo instalava no Redmi Note 8 e no Redmi Note 11, mas o Redmi Note 15 recusa a instalação dizendo que o app é "incompatível".
-2. **Publicar na Google Play Store.**
-3. **Trocar o ícone pelo logo da empresa do Leonardo.** O arquivo do logo ainda não foi fornecido: peça antes de começar essa parte e confirme qual é a empresa/marca.
+- [lib/main.dart](lib/main.dart): MaterialApp, `nomeApp` e cores da marca.
+- [lib/telas/abertura.dart](lib/telas/abertura.dart): abertura (~3 s; um toque pula) com o ícone e o rodapé completo da HSI.
+- [lib/telas/menu.dart](lib/telas/menu.dart): escolha do placar.
+- [lib/telas/truco.dart](lib/telas/truco.dart) e [lib/telas/domino.dart](lib/telas/domino.dart): 2 a 4 jogadores, + 1 ponto por toque, até 12.
+- [lib/telas/placar_rodadas.dart](lib/telas/placar_rodadas.dart): buraco, até 3000, com lançamento por rodada (parametrizado por `chave`/`metaPadrao`).
+- [lib/versao.dart](lib/versao.dart): `RodapeEmpresa` (logo HSI + versão; `compacto: true` mostra só o logo e o número).
+- [lib/anuncios.dart](lib/anuncios.dart): AdMob.
+- Testes em [test/widget_test.dart](test/widget_test.dart).
+- Chaves no SharedPreferences: truco `counter` (nós) e `counter2` (eles); buraco `buraco_nos`, `buraco_eles` (lista de pontos por rodada) e `buraco_meta`; dominó `domino_jogadores`, `domino_pontos`, `domino_nomes` e `domino_historico` (índices de quem pontuou, para desfazer).
+- Nome exibido: "Marcador de Jogos" (`android:label` no AndroidManifest e `nomeApp`). A tela de truco continua com o título "Placar de Truco".
+- Versão: `version:` do pubspec. O rodapé e a abertura mostram só a parte antes do `+`.
 
-**Decisões (nov/2026):** publicar **só na Google Play** por enquanto (iOS fica de fora: não mexer em `ios/` além do necessário). A conta da Play será de **organização**, em nome da empresa do Leonardo: LEONARDO VINICIUS NEVES LTDA, nome fantasia Help Soluções em Informática (HSI), CNPJ 31.412.990/0001-07 (exige D-U-N-S).
+## Stack
 
-Trabalhe nessa ordem: o (1) é pré-requisito para o (2), e o ícone entra antes do primeiro upload para a loja.
+- Flutter estável 3.47 / Dart `^3.13`, `shared_preferences` 2.x, `package_info_plus` e `google_mobile_ads` 9.x.
+- Android: compile/target do Flutter atual (SDK 36), Gradle Kotlin DSL (`android/app/build.gradle.kts`). Já suporta 64 bits e páginas de 16 KB; foi isso que fez o app voltar a instalar no Redmi Note 15.
 
-## Estado atual (tudo muito defasado)
+## Ícone e logo
 
-| Item | Atual | Observação |
-|---|---|---|
-| Dart SDK | `>=2.7.0 <3.0.0` | sem null safety (`Key key`, sem `?`/`required`) |
-| shared_preferences | `^0.5.4+8` | API antiga |
-| cupertino_icons | `^0.1.3` | |
-| compileSdk / targetSdk | 28 / 28 | |
-| minSdk | 16 | |
-| AGP / Gradle / Kotlin | 3.5.0 / 5.6.2 / 1.3.50 | `jcenter()`, `apply plugin` imperativo |
-| applicationId | `com.example.marcador_truco` | **a Play Store rejeita `com.example.*`** |
-| Application class | `io.flutter.app.FlutterApplication` | removida no Flutter atual |
-| Assinatura release | `signingConfig signingConfigs.debug` | `key.properties` já está no `.gitignore`, mas não existe |
+- Ícone do app: cartas de baralho (J/K/Q de paus no feltro verde). As fontes ficam em `assets/icon/` (`icone.png`, `icone_fundo.png`/`icone_frente.png` do adaptive icon, script `gerar_icone.py`). Para regerar: `dart run flutter_launcher_icons`. Ícone da Play Store (512×512): `store/icone_playstore_512.png`.
+- **O logo HSI não é o ícone do app** (a empresa tem outros apps). Ele aparece só no rodapé: `assets/images/logo_hsi.png`, gerado por `assets/icon/gerar_logo_hsi.py`.
 
-## Hipóteses para o "incompatível" no Redmi Note 15
+## Publicidade (AdMob)
 
-Ainda não foi diagnosticado. Antes de corrigir, confirme a causa com o aparelho conectado (`adb devices`, `adb shell getprop ro.product.cpu.abilist`, `adb shell getconf PAGE_SIZE`, `adb install -r app.apk` para ver o código de erro exato). As candidatas, da mais provável para a menos:
+- Fluxo: consentimento UMP (GDPR/LGPD) → `MobileAds.initialize()` → `BannerAnuncio` (banner ancorado) dentro de `BarraInferior` (banner + rodapé compacto), no menu e nas telas de jogo. Não há anúncio na abertura.
+- **Interstitial** (`Anuncios.aoTerminarPartida`): aparece só ao tocar "novo jogo" depois de uma partida TERMINADA (truco 12, dominó 12, buraco na meta). No máximo 1 a cada 3 min, nenhum nos 3 primeiros minutos de uso, e se não houver anúncio carregado o app segue sem esperar. Para testar: `--dart-define=INTERVALO_INTERSTITIAL_SEG=5`.
+- Banner: 320×50 por padrão; `--dart-define=BANNER_GRANDE=true` usa o adaptativo grande.
+- Sem parâmetros, usa os **IDs de teste do Google**. Em produção: App ID em `android/gradle.properties` (`admobAppId=ca-app-pub-...~...`, vira placeholder no manifesto) e IDs de bloco via `--dart-define=ADMOB_BANNER_ANDROID=...` / `ADMOB_INTERSTITIAL_ANDROID=...`.
+- `android/app/proguard-rules.pro` tem regras do R8 para o WorkManager/Room do SDK de anúncios. **Sem elas, o release fecha ao abrir.** Sempre teste o build release no aparelho depois de adicionar plugins nativos.
 
-- **Só 64 bits.** Aparelhos novos podem rodar só `arm64-v8a`, e um APK antigo gerado só com `armeabi-v7a` não instala neles.
-- **Páginas de memória de 16 KB.** No Android 15+ as `.so` nativas (o `libflutter.so` antigo) precisam estar alinhadas a 16 KB. Os Flutter/AGP atuais já fazem isso.
-- **targetSdk antigo demais** para a versão do Android do aparelho.
+## Play Store (pendências)
 
-As três se resolvem do mesmo jeito: atualizar para um Flutter estável recente e gerar o build com a toolchain atual.
+Os passos detalhados ficam em `PLANO_LANCAMENTO_PLAYSTORE.md` (fora do git).
 
-## Abordagem recomendada para a migração
-
-O salto de versão é grande demais para atualizar arquivo por arquivo. É mais seguro:
-
-1. Gerar um projeto novo com `flutter create --org <org> --project-name marcador_truco --platforms android,ios .`, num diretório temporário ou por cima deste numa branch. O `--org` define o applicationId: combine com o Leonardo, por exemplo `br.com.<empresa>`. **O applicationId não pode mudar depois da publicação.**
-2. Copiar a lógica de `lib/main.dart` e migrar para null safety (Dart 3).
-3. Atualizar `shared_preferences` para a versão atual, mantendo as mesmas chaves.
-4. Manter `android:label` = "Placar de Truco".
-5. Rodar `flutter analyze` e `flutter test`, corrigindo o widget test para refletir o app de verdade.
-6. Testar num aparelho/emulador recente (API 35/36) e, se possível, também num antigo.
-
-Trabalhe numa branch (por exemplo `modernizacao`), não direto na `master`. Commit e push só quando o Leonardo pedir.
-
-## Play Store: o que o build precisa ter
-
-- Um **Android App Bundle** (`flutter build appbundle --release`), não APK.
-- O targetSdk exigido pela Play no momento: confira a exigência atual em developer.android.com/google-play/requirements/target-sdk em vez de assumir um número.
-- Suporte a páginas de 16 KB (já vem com a toolchain atual).
-- Assinatura com **upload key** própria: um keystore `.jks` gerado com `keytool`, mais `android/key.properties` apontando para ele. **Nunca commitar o keystore nem o `key.properties`.** Oriente o Leonardo a guardar backup dos dois fora do repo; se perder o upload key, só dá para recuperar pelo suporte da Play.
-- `versionCode` incrementado a cada envio (o `version: x.y.z+N` no `pubspec.yaml`).
-- Fora do código, o Leonardo cuida no Play Console: conta de desenvolvedor, política de privacidade (o app não coleta dados, mas a Play exige a URL; dá para hospedar no site pessoal dele em `C:\repos\leoneves-site`), formulário de Data safety, classificação de conteúdo, ícone 512×512, feature graphic 1024×500 e screenshots. Contas pessoais novas precisam de teste fechado com testadores antes de ir para produção. Confirme a regra atual no Play Console.
-
-## Ícone / logo
-
-- Use o pacote `flutter_launcher_icons` (dev_dependency) para gerar os ícones Android (incluindo **adaptive icon**: foreground + background) e iOS a partir de um único arquivo-fonte.
-- Arquivo-fonte ideal: PNG quadrado de 1024×1024, com o logo dentro da área segura central (~66%) por causa da máscara do adaptive icon. Salve-o em `assets/icon/`.
-- Opcional: aplicar o logo/cores também na splash (`flutter_native_splash`) e no tema do app. Pergunte antes.
+- Publicar **só na Google Play** por enquanto, com conta de **organização** em nome da HSI (LEONARDO VINICIUS NEVES LTDA, CNPJ 31.412.990/0001-07, exige D-U-N-S).
+- **Assinatura de release: ainda usa a chave de debug** (`signingConfig = signingConfigs.getByName("debug")` no `build.gradle.kts`). Antes do primeiro envio, gere a upload key (`.jks`) e o `android/key.properties`, os dois no `.gitignore` e **nunca commitados**, no mesmo esquema do planevento e do kira. Guarde backup fora do repo.
+- Envie **AAB** (`flutter build appbundle`) e suba o `version: x.y.z+N` a cada envio.
+- No Play Console: marcar "Contém anúncios", preencher Data safety (ID de publicidade coletado pelo SDK), classificação de conteúdo, feature graphic 1024×500, screenshots e a URL da política de privacidade (que precisa mencionar o AdMob).
 
 ## Ambiente nesta máquina (Windows 11)
 
-- Flutter estável instalado em `C:\src\flutter` (**não está no PATH**: use `export PATH=/c/src/flutter/bin:$PATH`), com `flutter config --jdk-dir` apontando para o JBR do Android Studio.
-- Android SDK em `%LOCALAPPDATA%\Android\Sdk`, com platforms 33–36 e build-tools até 36.1.0. O `platform-tools` (adb) já está no PATH.
-- Java no PATH: OpenJDK 11 (sdkman). **O AGP atual exige JDK 17+.** Use o JBR do Android Studio, se existir, ou instale o 17/21 e aponte com `flutter config --jdk-dir`.
-- O build de iOS precisa de macOS e não roda aqui. Não mexa em `ios/` além do que o `flutter create` gerar, a menos que o Leonardo peça.
+- Flutter em `C:\src\flutter`, **fora do PATH**: use `export PATH=/c/src/flutter/bin:$PATH`. O `flutter config --jdk-dir` aponta para o JBR do Android Studio.
+- Android SDK em `%LOCALAPPDATA%\Android\Sdk`. O adb já está no PATH.
+- Celular de testes: Xiaomi (modelo 25080RABDG, Android 16). Se a instalação via USB for cancelada, desbloqueie a tela e aceite o aviso.
 
 ## Comandos
 
 ```bash
+export PATH=/c/src/flutter/bin:$PATH
 flutter pub get
 flutter analyze
 flutter test
-flutter run                          # aparelho conectado via USB (depuração USB ligada)
-# APK para instalar direto no celular (um por arquitetura; o Note 15 usa o arm64-v8a)
+flutter run                          # celular conectado via USB
+# APK para instalar direto (um por arquitetura; o celular de testes usa o arm64-v8a)
 flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/debug-info
-# AAB para a Play Store (a Play entrega só a arquitetura de cada aparelho)
-flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info   --dart-define=ADMOB_BANNER_ANDROID=<id do bloco de anúncio real>
+# AAB para a Play Store
+flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info --dart-define=ADMOB_BANNER_ANDROID=<id real>
 ```
 
-- `--split-debug-info` guarda os símbolos fora do app (libapp ~17% menor); guarde a pasta de cada versão publicada para conseguir ler stack traces de crashes.
-- O APK "universal" (`flutter build apk --release` sem `--split-per-abi`) tem ~50 MB porque leva 3 arquiteturas; não use para distribuir.
-
-## Publicidade (AdMob)
-
-- Código em [lib/anuncios.dart](lib/anuncios.dart): consentimento UMP (GDPR/LGPD) → `MobileAds.initialize()` → `BannerAnuncio` (banner adaptativo ancorado) dentro de `BarraInferior` (banner + rodapé compacto) no menu e nas telas de jogo. Não há anúncio na abertura.
-- **Interstitial** (`Anuncios.aoTerminarPartida`): só ao tocar "novo jogo" depois de uma partida TERMINADA (truco 12, dominó 12, buraco na meta); no máximo 1 a cada 3 min e nenhum nos 3 primeiros minutos de uso; se não houver anúncio carregado, segue sem esperar. Para testar sem esperar: `--dart-define=INTERVALO_INTERSTITIAL_SEG=5`. Produção: `--dart-define=ADMOB_INTERSTITIAL_ANDROID=...`.
-- Banner: padrão 320×50; `--dart-define=BANNER_GRANDE=true` usa o adaptativo grande.
-- Sem parâmetros, usa os **IDs de teste do Google**. Produção: App ID em `android/gradle.properties` (`admobAppId=ca-app-pub-...~...`, vira placeholder no manifesto) e IDs de bloco via `--dart-define=ADMOB_BANNER_ANDROID=...` / `ADMOB_BANNER_IOS=...`. iOS: trocar `GADApplicationIdentifier` no `ios/Runner/Info.plist`.
-- `android/app/proguard-rules.pro` tem regras do R8 para o WorkManager/Room do SDK de anúncios. **Sem elas o release fecha ao abrir** (`Failed to create an instance of androidx.work.impl.WorkDatabase`). Sempre teste o build release no aparelho depois de adicionar plugins nativos.
-- Com anúncios, na Play Console: marcar "Contém anúncios", Data safety declarando ID de publicidade/dados do dispositivo coletados pelo SDK, e a política de privacidade precisa mencionar o AdMob.
+- Guarde a pasta do `--split-debug-info` de cada versão publicada: é com ela que dá para ler os stack traces de crashes.
+- O APK "universal" (sem `--split-per-abi`) tem ~50 MB; não use para distribuir.
