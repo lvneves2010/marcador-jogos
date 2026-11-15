@@ -34,7 +34,7 @@ App Flutter para marcar placar de **truco, dominó e buraco**, da **Help Soluç�
 ## Ícone e logo
 
 - Ícone do app: cartas de baralho (J/K/Q de paus no feltro verde). As fontes ficam em `assets/icon/` (`icone.png`, `icone_fundo.png`/`icone_frente.png` do adaptive icon, script `gerar_icone.py`). Para regerar: `dart run flutter_launcher_icons`. Ícone da Play Store (512×512): `store/icone_playstore_512.png`.
-- **O logo HSI não é o ícone do app** (a empresa tem outros apps). Ele aparece só no rodapé: `assets/images/logo_hsi.png`, gerado por `assets/icon/gerar_logo_hsi.py`.
+- **O logo HSI não é o ícone do app** (a empresa tem outros apps). Ele aparece só no rodapé: `assets/images/logo_hsi.png` (128 px) e `assets/icon/logo_hsi_512.png`. Desde 2026-11-15 é o logo novo da HSI, só a esfera (sem o texto "HSI", ilegível nesse tamanho), exportado de `hsi-site/public/logo-hsi-mark.svg` (pasta irmã; o desenho é feito por `hsi-site/scripts/gerar_logo.py`). O antigo `gerar_logo_hsi.py` foi removido.
 
 ## Publicidade (AdMob)
 
