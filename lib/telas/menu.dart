@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../anuncios.dart';
 import 'domino.dart';
+import 'pingue_pongue.dart';
+import 'placar_livre.dart';
 import 'placar_rodadas.dart';
 import 'truco.dart';
 
@@ -56,11 +58,47 @@ class TelaMenu extends StatelessWidget {
             ),
           ),
           _OpcaoJogo(
+            titulo: 'Canastra',
+            descricao: 'Pontos por rodada, até 5000',
+            icone: Icons.filter_none,
+            cor: Colors.purple,
+            destino: () => const TelaPlacarRodadas(
+              titulo: 'Placar de Canastra',
+              chave: 'canastra',
+              metaPadrao: 5000,
+            ),
+          ),
+          _OpcaoJogo(
+            titulo: 'Tranca',
+            descricao: 'Pontos por rodada, até 3000',
+            icone: Icons.lock_outline,
+            cor: Colors.brown,
+            destino: () => const TelaPlacarRodadas(
+              titulo: 'Placar de Tranca',
+              chave: 'tranca',
+              metaPadrao: 3000,
+            ),
+          ),
+          _OpcaoJogo(
             titulo: 'Dominó',
             descricao: '2 a 4 jogadores, até 12 pontos',
             icone: Icons.grid_view,
             cor: Colors.deepOrange,
             destino: () => const TelaDomino(),
+          ),
+          _OpcaoJogo(
+            titulo: 'Pingue-pongue',
+            descricao: 'Games de 11, com vez do saque',
+            icone: Icons.sports_tennis,
+            cor: Colors.teal,
+            destino: () => const TelaPinguePongue(),
+          ),
+          _OpcaoJogo(
+            titulo: 'Placar livre',
+            descricao: 'Até 6 jogadores, regras livres',
+            icone: Icons.edit_note,
+            cor: Colors.blueGrey,
+            destino: () => const TelaPlacarLivre(),
           ),
         ],
       ),

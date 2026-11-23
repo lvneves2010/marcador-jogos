@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:marcador_jogos/main.dart';
 import 'package:marcador_jogos/telas/domino.dart';
+import 'package:marcador_jogos/telas/pingue_pongue.dart';
+import 'package:marcador_jogos/telas/placar_livre.dart';
 import 'package:marcador_jogos/telas/placar_rodadas.dart';
 import 'package:marcador_jogos/telas/truco.dart';
 
@@ -38,6 +40,8 @@ void main() {
       expect(find.text('Truco'), findsOneWidget);
       expect(find.text('Buraco'), findsOneWidget);
       expect(find.text('Dominó'), findsOneWidget);
+      expect(find.text('Canastra'), findsOneWidget);
+      expect(find.text('Tranca'), findsOneWidget);
       // menu: rodapé compacto (logo + número da versão)
       expect(find.text('1.0.1'), findsOneWidget);
       expect(find.text('Help Soluções em Informática'), findsNothing);
@@ -49,6 +53,31 @@ void main() {
       await tester.tap(find.text('Truco'));
       await tester.pumpAndSettle();
       expect(find.text('Placar de Truco'), findsOneWidget);
+    });
+
+    testWidgets('menu abre canastra, tranca, pingue-pongue e placar livre', (
+      tester,
+    ) async {
+      await tester.pumpWidget(const MyApp(duracaoAbertura: Duration.zero));
+      await tester.pumpAndSettle();
+      for (final (opcao, titulo, detalhe) in [
+        ('Canastra', 'Placar de Canastra', 'Meta: 5000 pontos'),
+        ('Tranca', 'Placar de Tranca', 'Meta: 3000 pontos'),
+        ('Pingue-pongue', 'Pingue-pongue', 'Games de 11 · melhor de 3'),
+        (
+          'Placar livre',
+          'Placar Livre',
+          '2 jogadores · Sem meta · maior vence',
+        ),
+      ]) {
+        await tester.scrollUntilVisible(find.text(opcao), 100);
+        await tester.tap(find.text(opcao));
+        await tester.pumpAndSettle();
+        expect(find.text(titulo), findsWidgets);
+        expect(find.text(detalhe), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      }
     });
   });
 
@@ -194,6 +223,126 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getInt('domino_jogadores'), 4);
       expect(prefs.getStringList('domino_pontos'), ['0', '0', '1', '0']);
+    });
+  });
+
+  group('pingue-pongue', () {
+    PartidaPingue jogar(String seq, {int meta = 11, int melhorDe = 3}) =>
+        PartidaPingue(
+          pontos: [for (final c in seq.split('')) int.parse(c)],
+          meta: meta,
+          melhorDe: melhorDe,
+        );
+
+    test('game exige 2 de vantagem', () {
+      // 10 × 10, depois 11 × 10: ainda não fechou
+      final p = jogar('${'01' * 10}0');
+      expect(p.placar, [11, 10]);
+      expect(p.games, [0, 0]);
+      final fechou = jogar('${'01' * 10}00');
+      expect(fechou.games, [1, 0]);
+      expect(fechou.placar, [0, 0]);
+      expect(fechou.parciais, [(12, 10)]);
+    });
+
+    test('saque troca a cada 2 pontos e a cada ponto no 10 × 10', () {
+      expect(jogar('').sacador, 0);
+      expect(jogar('0').sacador, 0);
+      expect(jogar('01').sacador, 1);
+      expect(jogar('011').sacador, 1);
+      expect(jogar('0110').sacador, 0);
+      final deuce = '01' * 10; // 10 × 10, 20 pontos: volta para quem começou
+      expect(jogar(deuce).sacador, 0);
+      expect(jogar('${deuce}0').sacador, 1);
+      expect(jogar('${deuce}01').sacador, 0);
+    });
+
+    test('game de 21 troca o saque a cada 5 pontos', () {
+      expect(jogar('0000', meta: 21).sacador, 0);
+      expect(jogar('00000', meta: 21).sacador, 1);
+    });
+
+    test('2º game começa com o outro sacando e melhor de 3 termina', () {
+      final g1 = '0' * 11;
+      expect(jogar(g1).sacador, 1);
+      final p = jogar(g1 + '1' * 11 + '0' * 11);
+      expect(p.games, [2, 1]);
+      expect(p.vencedor, 0);
+      // pontos depois do fim são ignorados
+      expect(jogar('${g1 * 2}1').placar, [0, 0]);
+      expect(jogar(g1, melhorDe: 1).vencedor, 0);
+    });
+
+    testWidgets('toque no lado soma ponto, desfaz e salva', (tester) async {
+      await tester.pumpWidget(_app(const TelaPinguePongue()));
+      await tester.pumpAndSettle();
+      expect(find.text('Saque'), findsOneWidget);
+
+      // antes do 1º ponto, o jogador 2 pode começar sacando
+      await tester.tap(find.text('Começar sacando'));
+      await tester.pump();
+      expect(find.text('Começar sacando'), findsOneWidget); // agora no 1
+
+      await tester.tap(find.text('Games: 0').first);
+      await tester.tap(find.text('Games: 0').first);
+      await tester.pump();
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('Começar sacando'), findsNothing);
+
+      await tester.tap(find.byTooltip('Desfazer último ponto'));
+      await tester.pump();
+      expect(find.text('1'), findsOneWidget);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getStringList('pingue_pontos'), ['0']);
+      expect(prefs.getInt('pingue_saque'), 1);
+    });
+  });
+
+  group('placar livre', () {
+    testWidgets('3 jogadores, menor vence ao chegar na meta', (tester) async {
+      await tester.pumpWidget(_app(const TelaPlacarLivre()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('3'));
+      await tester.tap(find.text('Menos pontos'));
+      await tester.enterText(find.byType(TextField), '100');
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('3 jogadores · Até 100 pontos · menor vence'),
+        findsOneWidget,
+      );
+      expect(find.text('Jogador 3'), findsOneWidget);
+
+      Future<void> rodada(List<String> v) async {
+        await tester.tap(find.text('Rodada'));
+        await tester.pumpAndSettle();
+        for (var j = 0; j < v.length; j++) {
+          await tester.enterText(
+            find.widgetWithText(TextField, 'Jogador ${j + 1}'),
+            v[j],
+          );
+        }
+        await tester.tap(find.text('Lançar'));
+        await tester.pumpAndSettle();
+      }
+
+      await rodada(['40', '10', '30']);
+      expect(find.textContaining('venceu'), findsNothing);
+      await rodada(['70', '20', '5']);
+      expect(find.text('Jogador 2 venceu!'), findsOneWidget);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getStringList('livre_rodadas'), ['40,10,30', '70,20,5']);
+      expect(prefs.getBool('livre_menor_vence'), true);
+      expect(prefs.getInt('livre_meta'), 100);
+
+      await tester.tap(find.byTooltip('Desfazer última rodada'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('venceu'), findsNothing);
     });
   });
 }

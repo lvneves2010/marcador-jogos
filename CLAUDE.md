@@ -1,6 +1,6 @@
 # Marcador de Jogos
 
-App Flutter para marcar placar de **truco, dominó e buraco**, da **Help Soluções em Informática (HSI)**. O placar fica salvo no aparelho via `shared_preferences`. Nasceu em 2020 como "Placar de Truco" e foi modernizado e renomeado em nov/2026.
+App Flutter para marcar placar de **truco, dominó, buraco, canastra, tranca e pingue-pongue** (mais um placar livre), da **Help Soluções em Informática (HSI)**. O placar fica salvo no aparelho via `shared_preferences`. Nasceu em 2020 como "Placar de Truco" e foi modernizado e renomeado em nov/2026.
 
 - Repo: https://github.com/lvneves2010/marcador-jogos (público, branch `master`). Antes se chamava `marcador-truco`; o GitHub redireciona o endereço antigo.
 - **Pasta de trabalho: `C:\repos\HSI\marcador-jogos`**, um clone limpo criado em 2026-11-10. A pasta antiga `C:\repos\HSI\marcador-truco` ficou só como backup.
@@ -18,11 +18,14 @@ App Flutter para marcar placar de **truco, dominó e buraco**, da **Help Soluç�
 - [lib/telas/abertura.dart](lib/telas/abertura.dart): abertura (~3 s; um toque pula) com o ícone e o rodapé completo da HSI.
 - [lib/telas/menu.dart](lib/telas/menu.dart): escolha do placar.
 - [lib/telas/truco.dart](lib/telas/truco.dart) e [lib/telas/domino.dart](lib/telas/domino.dart): 2 a 4 jogadores, + 1 ponto por toque, até 12.
-- [lib/telas/placar_rodadas.dart](lib/telas/placar_rodadas.dart): buraco, até 3000, com lançamento por rodada (parametrizado por `chave`/`metaPadrao`).
+- [lib/telas/placar_rodadas.dart](lib/telas/placar_rodadas.dart): Nós × Eles com lançamento por rodada, parametrizado por `chave`/`metaPadrao`. Usado por buraco (3000), canastra (5000) e tranca (3000).
+- [lib/telas/placar_livre.dart](lib/telas/placar_livre.dart): 2 a 6 jogadores, pontos por rodada, meta opcional (0 = sem meta) e "mais/menos pontos vence".
+- [lib/telas/pingue_pongue.dart](lib/telas/pingue_pongue.dart): games de 11 ou 21 com 2 de vantagem, melhor de 1/3/5/7 e indicação do saque. A regra fica em `PartidaPingue`, calculada a partir do histórico de pontos.
+- [lib/telas/dialogos.dart](lib/telas/dialogos.dart): diálogos compartilhados (`confirmar`, `pedirNumero`, `pedirNome`, `DialogoRodada` com um campo por jogador).
 - [lib/versao.dart](lib/versao.dart): `RodapeEmpresa` (logo HSI + versão; `compacto: true` mostra só o logo e o número).
 - [lib/anuncios.dart](lib/anuncios.dart): AdMob.
 - Testes em [test/widget_test.dart](test/widget_test.dart).
-- Chaves no SharedPreferences: truco `counter` (nós) e `counter2` (eles); buraco `buraco_nos`, `buraco_eles` (lista de pontos por rodada) e `buraco_meta`; dominó `domino_jogadores`, `domino_pontos`, `domino_nomes` e `domino_historico` (índices de quem pontuou, para desfazer).
+- Chaves no SharedPreferences: truco `counter` (nós) e `counter2` (eles); buraco/canastra/tranca `<chave>_nos`, `<chave>_eles` (lista de pontos por rodada) e `<chave>_meta`; placar livre `livre_nomes`, `livre_rodadas` (cada rodada como "a,b,c"), `livre_meta` e `livre_menor_vence`; pingue-pongue `pingue_nomes`, `pingue_pontos` (quem fez cada ponto), `pingue_meta`, `pingue_melhor_de` e `pingue_saque`; dominó `domino_jogadores`, `domino_pontos`, `domino_nomes` e `domino_historico` (índices de quem pontuou, para desfazer).
 - Nome exibido: "Marcador de Jogos" (`android:label` no AndroidManifest e `nomeApp`). A tela de truco continua com o título "Placar de Truco".
 - Versão: `version:` do pubspec. O rodapé e a abertura mostram só a parte antes do `+`.
 
@@ -39,7 +42,7 @@ App Flutter para marcar placar de **truco, dominó e buraco**, da **Help Soluç�
 ## Publicidade (AdMob)
 
 - Fluxo: consentimento UMP (GDPR/LGPD) → `MobileAds.initialize()` → `BannerAnuncio` (banner ancorado) dentro de `BarraInferior` (banner + rodapé compacto), no menu e nas telas de jogo. Não há anúncio na abertura.
-- **Interstitial** (`Anuncios.aoTerminarPartida`): aparece só ao tocar "novo jogo" depois de uma partida TERMINADA (truco 12, dominó 12, buraco na meta). No máximo 1 a cada 3 min, nenhum nos 3 primeiros minutos de uso, e se não houver anúncio carregado o app segue sem esperar. Para testar: `--dart-define=INTERVALO_INTERSTITIAL_SEG=5`.
+- **Interstitial** (`Anuncios.aoTerminarPartida`): aparece só ao tocar "novo jogo" depois de uma partida TERMINADA (truco 12, dominó 12, placares por rodada na meta, placar livre com meta, pingue-pongue com a partida decidida). No máximo 1 a cada 3 min, nenhum nos 3 primeiros minutos de uso, e se não houver anúncio carregado o app segue sem esperar. Para testar: `--dart-define=INTERVALO_INTERSTITIAL_SEG=5`.
 - Banner: 320×50 por padrão; `--dart-define=BANNER_GRANDE=true` usa o adaptativo grande.
 - Sem parâmetros, usa os **IDs de teste do Google**. Em produção: App ID em `android/gradle.properties` (`admobAppId=ca-app-pub-...~...`, vira placeholder no manifesto) e IDs de bloco via `--dart-define=ADMOB_BANNER_ANDROID=...` / `ADMOB_INTERSTITIAL_ANDROID=...`.
 - `android/app/proguard-rules.pro` tem regras do R8 para o WorkManager/Room do SDK de anúncios. **Sem elas, o release fecha ao abrir.** Sempre teste o build release no aparelho depois de adicionar plugins nativos.

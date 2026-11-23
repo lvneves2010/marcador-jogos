@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../anuncios.dart';
+import 'dialogos.dart';
 
 /// Placar "Nós × Eles" somando pontos rodada a rodada até uma meta.
-/// Usado pelo buraco e pelo dominó; cada jogo salva com sua [chave].
+/// Usado pelo buraco, canastra e tranca; cada jogo salva com sua [chave].
 class TelaPlacarRodadas extends StatefulWidget {
   const TelaPlacarRodadas({
     super.key,
@@ -70,14 +70,15 @@ class _TelaPlacarRodadasState extends State<TelaPlacarRodadas> {
   }
 
   Future<void> _novaRodada() async {
-    final rodada = await showDialog<(int, int)>(
+    final rodada = await showDialog<List<int>>(
       context: context,
-      builder: (_) => _DialogoRodada(numero: _nos.length + 1),
+      builder: (_) =>
+          DialogoRodada(numero: _nos.length + 1, nomes: const ['Nós', 'Eles']),
     );
     if (rodada == null) return;
     setState(() {
-      _nos.add(rodada.$1);
-      _eles.add(rodada.$2);
+      _nos.add(rodada[0]);
+      _eles.add(rodada[1]);
     });
     _salvar();
   }
@@ -92,24 +93,14 @@ class _TelaPlacarRodadasState extends State<TelaPlacarRodadas> {
   }
 
   Future<void> _novoJogo() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Novo jogo'),
-        content: const Text('Zerar o placar e apagar as rodadas?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Zerar'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
+    if (!await confirmar(
+      context,
+      'Novo jogo',
+      'Zerar o placar e apagar as rodadas?',
+      ok: 'Zerar',
+    )) {
+      return;
+    }
     void zerar() {
       if (!mounted) return;
       setState(() {
@@ -123,29 +114,11 @@ class _TelaPlacarRodadasState extends State<TelaPlacarRodadas> {
   }
 
   Future<void> _editarMeta() async {
-    final ctrl = TextEditingController(text: '$_meta');
-    final nova = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Meta de pontos'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(labelText: 'Jogo termina em'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, int.tryParse(ctrl.text)),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    final nova = await pedirNumero(
+      context,
+      titulo: 'Meta de pontos',
+      rotulo: 'Jogo termina em',
+      inicial: _meta,
     );
     if (nova == null || nova <= 0) return;
     setState(() => _meta = nova);
@@ -285,106 +258,5 @@ class _Total extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-/// Diálogo para lançar os pontos de uma rodada (aceita negativos).
-class _DialogoRodada extends StatefulWidget {
-  const _DialogoRodada({required this.numero});
-
-  final int numero;
-
-  @override
-  State<_DialogoRodada> createState() => _DialogoRodadaState();
-}
-
-class _DialogoRodadaState extends State<_DialogoRodada> {
-  final _nos = _CampoPontos();
-  final _eles = _CampoPontos();
-
-  @override
-  void dispose() {
-    _nos.ctrl.dispose();
-    _eles.ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('${widget.numero}ª rodada'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _campo('Nós', _nos, autofocus: true),
-          const SizedBox(height: 12),
-          _campo('Eles', _eles),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, (_nos.valor, _eles.valor)),
-          child: const Text('Lançar'),
-        ),
-      ],
-    );
-  }
-
-  Widget _campo(String rotulo, _CampoPontos c, {bool autofocus = false}) {
-    return Row(
-      children: [
-        // muitos teclados numéricos não têm o sinal de menos: botão ±
-        Tooltip(
-          message: 'Trocar sinal',
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: OutlinedButton(
-              onPressed: () => setState(() => c.negativo = !c.negativo),
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.zero,
-                shape: const CircleBorder(),
-                foregroundColor: c.negativo ? Colors.red : Colors.green,
-                side: BorderSide(
-                  color: c.negativo ? Colors.red : Colors.green,
-                  width: 2,
-                ),
-              ),
-              child: Text(
-                c.negativo ? '−' : '+',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: TextField(
-            controller: c.ctrl,
-            autofocus: autofocus,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: InputDecoration(labelText: rotulo, hintText: '0'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CampoPontos {
-  final ctrl = TextEditingController();
-  bool negativo = false;
-
-  int get valor {
-    final v = int.tryParse(ctrl.text) ?? 0;
-    return negativo ? -v : v;
   }
 }
